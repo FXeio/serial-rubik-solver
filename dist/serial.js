@@ -40,6 +40,7 @@ class Serial {
                     reject(e);
                 }
                 else {
+                    console.log('[serial]', data);
                     resolve(bytesWritten);
                 }
             });

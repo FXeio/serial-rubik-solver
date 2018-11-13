@@ -44,6 +44,7 @@ export class Serial {
         if (e) {
           reject(e);
         } else {
+          console.log('[serial]', data);
           resolve(bytesWritten);
         }
       });

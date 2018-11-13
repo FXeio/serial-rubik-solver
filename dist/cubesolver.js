@@ -36,8 +36,15 @@ class CubeSolver {
             'R2': 'R R'
         });
         return {
-            // arduino: solution,
-            arduino: 'FUDBFBRLLRUDBFLLRLFB',
+            arduino: solution.allReplace({
+                "U'": 'u',
+                "F'": 'f',
+                "L'": 'l',
+                "D'": 'd',
+                "B'": 'b',
+                "R'": 'r'
+            }),
+            // arduino: 'FUDBFBRLLRUDBFLLRLFB',
             web: solution.allReplace({
                 'U': 'd',
                 'D': 'u',
