@@ -43,7 +43,7 @@ class CubeSolver {
                 "D'": 'd',
                 "B'": 'b',
                 "R'": 'r'
-            }),
+            }).replace(' ', ''),
             // arduino: 'FUDBFBRLLRUDBFLLRLFB',
             web: solution.allReplace({
                 'U': 'd',
