@@ -49,7 +49,7 @@ export class CubeSolver {
         "D'": 'd',
         "B'": 'b',
         "R'": 'r'
-      }).replace(' ', ''),
+      }).replace(/ /g, ''),
       // arduino: 'FUDBFBRLLRUDBFLLRLFB',
       web: solution.allReplace({
         'U': 'd',
