@@ -1,8 +1,9 @@
-const fs = require('fs');
+import fs = require('fs');
 const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 
-const SerialPort = require('serialport');
-const Cube = require('cubejs');
+// import SerialPort = require('serialport');
+import * as SerialPort from 'serialport';
+import * as Cube from 'cubejs';
 require('cubejs/lib/solve.js');
 
 let serial = new SerialPort(config.serial.port, {
