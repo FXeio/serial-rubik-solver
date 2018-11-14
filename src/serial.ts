@@ -28,7 +28,7 @@ export class Serial {
           }
           if (this.serial == null) {
             console.error('[serial] No serial port available, retry in 5s');
-            setTimeout(listTimer, 5000);
+            setTimeout(listTimer.call(this), 5000);
           } else {
             this.serial.on('open', () => {
               this.isReady = true;
@@ -37,7 +37,7 @@ export class Serial {
             this.serial.on('close', () => {
               this.isReady = false;
               console.log('[serial] Serial closed, reopening in 3s');
-              setTimeout(listTimer, 3000);
+              setTimeout(listTimer.call(this), 3000);
               this.serial.removeAllListeners();
             });
             this.serial.on('error', (e) => {
@@ -52,7 +52,7 @@ export class Serial {
             this.openSerial()
               .catch((e) => {
                 console.log('[serial] Error opening serial, retrying in 5s');
-                setTimeout(listTimer, 5000);
+                setTimeout(listTimer.call(this), 5000);
                 this.serial.removeAllListeners();
               })
           }
@@ -61,6 +61,7 @@ export class Serial {
           console.error('[serial] Error listing serial ports:', e);
         });
     }
+    listTimer.call(this);
   }
 
   openSerial() {

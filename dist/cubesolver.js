@@ -36,7 +36,6 @@ class CubeSolver {
         this.webCubeString = fromString;
         this.cubeString = tmpString.substr(0, 9) + tmpString.substr(45, 9) + tmpString.substr(9, 9) + tmpString.substr(27, 9) + tmpString.substr(18, 9) + tmpString.substr(36, 9);
         this.cube = Cube.fromString(this.cubeString);
-        console.log(this.cube);
     }
     getString() {
         return this.webCubeString;
