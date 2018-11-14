@@ -13,52 +13,54 @@ export class Serial {
   }
 
   async list() {
-    return SerialPort.list()
-      .then((ports) => {
-        for (const port of ports) {
-          if (port.productId != null) {
-            console.log('[serial] Using serial:', port);
-            this.serial = new SerialPort(port.comName, {
-              baudRate: 9600,
-              autoOpen: false
-            });
-            break;
-          }
-        }
-        if (this.serial == null) {
-          console.error('[serial] No serial port available, retry in 5s');
-          setTimeout(this.list, 5000);
-        } else {
-          this.serial.on('open', () => {
-            this.isReady = true;
-            console.log('[serial] Serial opened');
-          });
-          this.serial.on('close', () => {
-            this.isReady = false;
-            console.log('[serial] Serial closed, reopening in 3s');
-            setTimeout(this.list, 3000);
-            this.serial.removeAllListeners();
-          });
-          this.serial.on('error', (e) => {
-            console.error('[serial] Error occourred:', e);
-          });
-          this.serial.on('data', (data) => {
-            console.log('[serial] New data:', data);
-            if (data === 'e') {
-              this.solutionEnded();
+    function listTimer() {
+      return SerialPort.list()
+        .then((ports) => {
+          for (const port of ports) {
+            if (port.productId != null) {
+              console.log('[serial] Using serial:', port);
+              this.serial = new SerialPort(port.comName, {
+                baudRate: 9600,
+                autoOpen: false
+              });
+              break;
             }
-          });
-          this.openSerial()
-            .catch((e) => {
-              console.log('[serial] Error opening serial, retrying in 5s');
-              setTimeout(this.list, 5000);
+          }
+          if (this.serial == null) {
+            console.error('[serial] No serial port available, retry in 5s');
+            setTimeout(listTimer, 5000);
+          } else {
+            this.serial.on('open', () => {
+              this.isReady = true;
+              console.log('[serial] Serial opened');
+            });
+            this.serial.on('close', () => {
+              this.isReady = false;
+              console.log('[serial] Serial closed, reopening in 3s');
+              setTimeout(listTimer, 3000);
               this.serial.removeAllListeners();
-            })
-        }
-      })
-      .catch((e) => {
-        console.error('[serial] Error listing serial ports:', e);
-      });
+            });
+            this.serial.on('error', (e) => {
+              console.error('[serial] Error occourred:', e);
+            });
+            this.serial.on('data', (data) => {
+              console.log('[serial] New data:', data);
+              if (data === 'e') {
+                this.solutionEnded();
+              }
+            });
+            this.openSerial()
+              .catch((e) => {
+                console.log('[serial] Error opening serial, retrying in 5s');
+                setTimeout(listTimer, 5000);
+                this.serial.removeAllListeners();
+              })
+          }
+        })
+        .catch((e) => {
+          console.error('[serial] Error listing serial ports:', e);
+        });
+    }
   }
 
   openSerial() {
