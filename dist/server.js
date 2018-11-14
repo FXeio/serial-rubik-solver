@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const http_1 = require("http");
 const express = require("express");
@@ -10,37 +18,63 @@ class RubikSolverServer {
     constructor() {
         this.port = 8080;
         this.serial = new serial_1.Serial();
-        this.cubeSolver = new cubesolver_1.CubeSolver();
         this.app = express();
         this.server = http_1.createServer(this.app);
         this.io = socketIo(this.server);
-        this.listen();
+        this.cubeSolver = new cubesolver_1.CubeSolver();
+        this.cubeSolver.init()
+            .then(() => {
+            this.listen();
+        });
     }
     listen() {
         this.server.listen(this.port, () => {
-            console.log('Running server on port %s', this.port);
+            console.log('[WS] Running server on port', this.port);
         });
         this.io.on('connect', (socket) => {
-            console.log('Connected client on port %s.', this.port);
+            console.log('[WS] New client');
             // setInterval(() => {
             //   this.io.emit('message', new Message('move', 'B'));
             // }, 2000);
             socket.on('message', (m) => {
-                console.log('[server](message): %s', JSON.stringify(m));
+                console.log('[WS](new message):', m);
                 if (m.action === 'setString') {
                     this.cubeSolver.buildCube(m.content);
                 }
                 else if (m.action === 'getString') {
                     this.io.emit('message', new message_1.Message('setString', this.cubeSolver.getString()));
                 }
+                else if (m.action === 'searchSolutions') {
+                    for (let i = 22; i > 0; i--) {
+                        this.cubeSolver.solve(i)
+                            .then((solution) => {
+                            this.io.emit('message', new message_1.Message('solution', solution.web));
+                        })
+                            .catch((e) => {
+                            console.error('[cubesolver]', e);
+                        });
+                    }
+                }
                 else if (m.action === 'solve') {
-                    const solution = this.cubeSolver.solve();
-                    this.io.emit('message', new message_1.Message('move', solution.web));
-                    this.serial.send(solution.arduino);
+                    if (this.cubeSolver.currentSolution == null) {
+                        console.error('[cubesolver] No solution found yet');
+                        return;
+                    }
+                    this.serial.send(this.cubeSolver.currentSolution.arduino)
+                        .then(() => __awaiter(this, void 0, void 0, function* () {
+                        this.cubeSolver.startStopWatch();
+                        this.serial.waitSolutionCompleted(() => {
+                            this.io.emit('message', new message_1.Message('totalTime', this.cubeSolver.endStopWatch().toString()));
+                        });
+                    }))
+                        .catch((e) => {
+                        console.error('[serial]', e);
+                    });
+                    this.io.emit('message', new message_1.Message('move', this.cubeSolver.currentSolution.web));
                 }
             });
             socket.on('disconnect', () => {
-                console.log('Client disconnected');
+                console.log('[WS] Client disconnected');
             });
         });
     }
