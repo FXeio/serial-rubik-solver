@@ -51,9 +51,17 @@ export class CubeSolver {
   }
 
   solve(maxMoves): Promise<Solution> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       const solvingFor = this.cubeString;
-      const rawSolution = this.cube.solve(maxMoves).allReplace({
+      let rawSolution;
+      try {
+        rawSolution = this.cube.solve(maxMoves);
+      } catch (e) {
+        reject('Library error, ignore')
+        return;
+      }
+      const count = rawSolution.split(' ').length;
+      rawSolution = rawSolution.allReplace({
         'U2': 'U U',
         'F2': 'F F',
         'L2': 'L L',
@@ -61,6 +69,7 @@ export class CubeSolver {
         'B2': 'B B',
         'R2': 'R R'
       });
+      console.log('[cubesolver] New solution:', rawSolution);
       if (this.cubeString === solvingFor) {
         let solution = new Solution(
           rawSolution.allReplace({
@@ -76,7 +85,8 @@ export class CubeSolver {
             "D'": 'd',
             "B'": 'b',
             "R'": 'r'
-          }).replace(/ /g, '')
+          }).replace(/ /g, ''),
+          count
         );
         this.currentSolution = solution;
         resolve(solution);

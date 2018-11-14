@@ -47,9 +47,18 @@ class CubeSolver {
         return Date.now() - this.startTime;
     }
     solve(maxMoves) {
-        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve, reject) => {
             const solvingFor = this.cubeString;
-            const rawSolution = this.cube.solve(maxMoves).allReplace({
+            let rawSolution;
+            try {
+                rawSolution = this.cube.solve(maxMoves);
+            }
+            catch (e) {
+                reject('Library error, ignore');
+                return;
+            }
+            const count = rawSolution.split(' ').length;
+            rawSolution = rawSolution.allReplace({
                 'U2': 'U U',
                 'F2': 'F F',
                 'L2': 'L L',
@@ -57,6 +66,7 @@ class CubeSolver {
                 'B2': 'B B',
                 'R2': 'R R'
             });
+            console.log('[cubesolver] New solution:', rawSolution);
             if (this.cubeString === solvingFor) {
                 let solution = new solution_1.Solution(rawSolution.allReplace({
                     'U': 'd',
@@ -70,14 +80,14 @@ class CubeSolver {
                     "D'": 'd',
                     "B'": 'b',
                     "R'": 'r'
-                }).replace(/ /g, ''));
+                }).replace(/ /g, ''), count);
                 this.currentSolution = solution;
                 resolve(solution);
             }
             else {
                 reject(new Error('Solution timed out'));
             }
-        }));
+        });
     }
 }
 exports.CubeSolver = CubeSolver;

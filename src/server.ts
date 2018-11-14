@@ -38,7 +38,7 @@ export class RubikSolverServer {
       // setInterval(() => {
       //   this.io.emit('message', new Message('move', 'B'));
       // }, 2000);
-      socket.on('message', (m: Message) => {
+      socket.on('message', async (m: Message) => {
         console.log('[WS](new message):', m);
         if (m.action === 'setString') {
           this.cubeSolver.buildCube(m.content);
@@ -46,9 +46,10 @@ export class RubikSolverServer {
           this.io.emit('message', new Message('setString', this.cubeSolver.getString()));
         } else if (m.action === 'searchSolutions') {
           for (let i = 22; i > 0; i--) {
-            this.cubeSolver.solve(i)
+            await this.cubeSolver.solve(i)
               .then((solution) => {
                 this.io.emit('message', new Message('solution', solution.web));
+                i = solution.count - 1;
               })
               .catch((e) => {
                 console.error('[cubesolver]', e);
