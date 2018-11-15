@@ -85,7 +85,7 @@ class Serial {
     send(data) {
         return new Promise((resolve, reject) => {
             if (!this.isReady) {
-                reject(new Error('Serial port not ready'));
+                reject('Serial port not ready');
             }
             this.serial.write(data, (e, bytesWritten) => {
                 if (e) {

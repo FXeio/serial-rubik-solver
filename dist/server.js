@@ -17,15 +17,13 @@ const serial_1 = require("./serial");
 class RubikSolverServer {
     constructor() {
         this.port = 8080;
+        this.solving = false;
         this.serial = new serial_1.Serial();
         this.app = express();
         this.server = http_1.createServer(this.app);
         this.io = socketIo(this.server);
         this.cubeSolver = new cubesolver_1.CubeSolver();
-        this.cubeSolver.init()
-            .then(() => {
-            this.listen();
-        });
+        this.listen();
     }
     listen() {
         this.server.listen(this.port, () => {
@@ -45,22 +43,33 @@ class RubikSolverServer {
                     this.io.emit('message', new message_1.Message('setString', this.cubeSolver.getString()));
                 }
                 else if (m.action === 'searchSolutions') {
+                    this.solving = true;
                     for (let i = 22; i > 0; i--) {
+                        let toExit = false;
                         yield this.cubeSolver.solve(i)
                             .then((solution) => {
                             this.io.emit('message', new message_1.Message('solution', solution.web));
+                            if (solution.count > i) {
+                                toExit = true;
+                            }
                             i = solution.count - 1;
                         })
                             .catch((e) => {
                             console.error('[cubesolver]', e);
                         });
+                        if (toExit) {
+                            break;
+                        }
                     }
+                    console.log('[cubesolver] That was the best one');
                 }
                 else if (m.action === 'solve') {
                     if (this.cubeSolver.currentSolution == null) {
-                        console.error('[cubesolver] No solution found yet');
+                        console.error('[cubesolver] No solutions found yet');
                         return;
                     }
+                    this.solving = false;
+                    this.cubeSolver.stopSolving();
                     this.serial.send(this.cubeSolver.currentSolution.arduino)
                         .then(() => __awaiter(this, void 0, void 0, function* () {
                         this.cubeSolver.startStopWatch();
