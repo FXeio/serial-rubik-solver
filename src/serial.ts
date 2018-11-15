@@ -45,9 +45,9 @@ export class Serial {
           });
           this.serial.on('data', (data) => {
             console.log('[serial] New data:', data);
-            if (data === 'e') {
-              this.solutionEnded();
-            }
+            this.solutionEnded();
+            // if (data === 'e') {
+            // }
           });
           this.openSerial()
             .catch((e) => {
