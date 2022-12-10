@@ -19,7 +19,7 @@
   "homepage": "https://github.com/FXeio/serial-rubik-solver#readme",
   "dependencies": {
     "cubejs": "^1.3.2",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "serialport": "^7.0.2",
     "socket.io": "^2.1.1",
     "threads": "^0.12.0"
